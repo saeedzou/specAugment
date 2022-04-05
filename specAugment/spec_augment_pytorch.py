@@ -65,7 +65,7 @@ def time_warp(spec, W=5):
 
 
 def spec_augment(mel_spectrogram, time_warping_para=80, frequency_masking_para=27,
-                 time_masking_para=100, frequency_mask_num=1, time_mask_num=1):
+                 time_masking_para=100, frequency_mask_num=1, time_mask_num=1, skip_time_warp=False):
     """Spec augmentation Calculation Function.
     'SpecAugment' have 3 steps for audio data augmentation.
     first step is time warping using Tensorflow's image_sparse_warp function.
@@ -89,23 +89,24 @@ def spec_augment(mel_spectrogram, time_warping_para=80, frequency_masking_para=2
     tau = mel_spectrogram.shape[2]
 
     # Step 1 : Time warping
-    warped_mel_spectrogram = time_warp(mel_spectrogram, W=time_warping_para)
+    if not skip_time_warp:
+        mel_spectrogram = time_warp(mel_spectrogram, W=time_warping_para)
 
     # Step 2 : Frequency masking
     for i in range(frequency_mask_num):
         f = np.random.uniform(low=0.0, high=frequency_masking_para)
         f = int(f)
         f0 = random.randint(0, v-f)
-        warped_mel_spectrogram[:, f0:f0+f, :] = 0
+        mel_spectrogram[:, f0:f0+f, :] = 0
 
     # Step 3 : Time masking
     for i in range(time_mask_num):
         t = np.random.uniform(low=0.0, high=time_masking_para)
         t = int(t)
         t0 = random.randint(0, tau-t)
-        warped_mel_spectrogram[:, :, t0:t0+t] = 0
+        mel_spectrogram[:, :, t0:t0+t] = 0
 
-    return warped_mel_spectrogram
+    return mel_spectrogram
 
 
 def visualization_spectrogram(mel_spectrogram, title):
