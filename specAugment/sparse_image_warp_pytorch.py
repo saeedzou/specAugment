@@ -361,8 +361,8 @@ def interpolate_bilinear(grid,
 
         # max_floor is size_in_indexing_dimension - 2 so that max_floor + 1
         # is still a valid index into the grid.
-        max_floor = torch.tensor(size_in_indexing_dimension - 2, dtype=query_type)
-        min_floor = torch.tensor(0.0, dtype=query_type)
+        max_floor = (size_in_indexing_dimension - 2) * torch.ones((), dtype=query_type)
+        min_floor = torch.zeros((), dtype=query_type)
         maxx = torch.max(min_floor, torch.floor(queries))
         floor = torch.min(maxx, max_floor)
         int_floor = floor.long()
@@ -372,9 +372,9 @@ def interpolate_bilinear(grid,
 
         # alpha has the same type as the grid, as we will directly use alpha
         # when taking linear combinations of pixel values from the image.
-        alpha = torch.tensor(queries - floor, dtype=grid_type)
-        min_alpha = torch.tensor(0.0, dtype=grid_type)
-        max_alpha = torch.tensor(1.0, dtype=grid_type)
+        alpha = (queries - floor).clone().detach()
+        min_alpha = torch.zeros((), dtype=grid_type)
+        max_alpha = torch.ones((), dtype=grid_type)
         alpha = torch.min(torch.max(min_alpha, alpha), max_alpha)
 
         # Expand alpha to [b, n, 1] so we can use broadcasting
